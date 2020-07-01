@@ -108,3 +108,27 @@ input[type="submit"]:hover {
   background-color: #282c34;
   color: antiquewhite;
 }
+
+.search > input[type="text"]{
+  width: 40%;
+  min-width: 170px;
+}
+
+@media screen and (min-width: 694px) and (max-width: 915px){
+  .movie {
+    max-width: 33%;
+  }
+}
+
+@media screen and (min-width: 652px) and (max-width: 693px) {
+  .movie{
+    max-width: 50%;
+  }
+}
+
+@media screen and (max-width: 651px) {
+  .movie {
+    max-width: 100%;
+    margin: auto;
+  }
+}
