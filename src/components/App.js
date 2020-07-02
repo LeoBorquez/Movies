@@ -1,10 +1,15 @@
-import React, { useReducer, useEffect, useState } from 'react';
+import React, { useReducer, useEffect, useState, useRef, useMemo } from 'react';
 import '../App.css';
 import Header from './Header';
 import Movie from './Movie';
 import Search from './Search';
 import { useForm } from '../hooks/UseForm'
 import { useFetch } from '../hooks/UseFetch';
+//pages
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { Index } from '../index'
+import { About } from '../pages/about'
+import { UserContext } from '../context/UserContext';
 
 const MOVIE_API_URL = "https://www.omdbapi.com/?s=man&apikey=4a3b711b" // api movies Duh!
 
@@ -54,7 +59,15 @@ const App = () => {
     localStorage.setItem("count", JSON.stringify(count));
   }, [count]);
 
+  // call and api from a hook
   const { data, load } = useFetch(`http://numbersapi.com/${count}/trivia`);
+
+  const inputRef = useRef();
+
+  // context
+  const [user, setUser] = useState(null);
+  // save the value of the context, change when the context change
+  const value = useMemo(() => ({user, setUser}), [user, setUser])
 
   // calling api
   useEffect(() => {
@@ -94,32 +107,56 @@ const App = () => {
   const { movies, errorMessage, loading } = state;
 
   return (
-    <div className="App">
-      {/* send the text property to the Header component */}
-      <Header text="MOVIES" />
-      <div>
-        <input name="email" value={values.email} onChange={handleChange} />
-        <input type="password" name="password" value={values.password} onChange={handleChange} />
-      </div>
-      <Search search={search} />
-      <p className="App-intro"> Here a few of our favorite movies </p>
-      <div className="movies">
-        {loading && !errorMessage ? (
-          <span>loading....</span>
-        ) : errorMessage ? (
-          <div className="errorMessage">{errorMessage}</div>
-        ) : (
-              movies.map((movie, index) => (
-                <Movie key={`${index}-${movie.Title}`} movie={movie} />
-              ))
-            )}
-      </div>
+    <Router>
+      <div className="App">
+        {/* send the text property to the Header component */}
+        <Header text="MOVIES" />
 
-      <div>{!data ? "loading..." : data}</div>
-      <div>count: {count}</div>
-      <button onClick={() => setCount(c => c + 1)}> change trivia</button>
+        {/* navigation */}
+        <div>
+          <nav>
+            <ul>
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              <li>
+                <Link to="/about/">About</Link>
+              </li>
+            </ul>
+          </nav>
+          {/* wrap the context to the routes */}
+          <UserContext.Provider value={value}>
+            <Route path="/" exact component={Index} />
+            <Route path="/about/" component={About} />
+          </UserContext.Provider>
 
-    </div>
+        </div>
+
+        <div>
+          <input ref={inputRef} name="email" value={values.email} onChange={handleChange} />
+          <input type="password" name="password" value={values.password} onChange={handleChange} />
+        </div>
+        <button onClick={() => { console.log(inputRef.current.focus()); }}>focus</button>
+        <Search search={search} />
+        <p className="App-intro"> Here a few of our favorite movies </p>
+        <div className="movies">
+          {loading && !errorMessage ? (
+            <span>loading....</span>
+          ) : errorMessage ? (
+            <div className="errorMessage">{errorMessage}</div>
+          ) : (
+                movies.map((movie, index) => (
+                  <Movie key={`${index}-${movie.Title}`} movie={movie} />
+                ))
+              )}
+        </div>
+
+        <div>{!data ? "loading..." : data}</div>
+        <div>count: {count}</div>
+        <button onClick={() => setCount(c => c + 1)}> change trivia</button>
+
+      </div>
+    </Router>
   );
 
 };
